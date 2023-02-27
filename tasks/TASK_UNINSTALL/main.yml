@@ -1,0 +1,19 @@
+#=================================================================================================#
+#ROLE TASK - UNINSTALL SCRIPT                                                                     #
+#=================================================================================================#
+
+- name: "LXD_SERVICE/TASK_UNINSTALL/01a - OS FAMILY = DEBIAN"
+  include_tasks: "PLATFORMS/DEBIAN_FAMILY/function_using_{{applied_lxd_role_config.uninstall_config.method}}.yml"
+  when: ( ansible_facts.os_family == 'Debian' )
+
+- name: "LXD_SERVICE/TASK_UNINSTALL/01b - OS FAMILY = RED HAT"
+  include_tasks: "PLATFORMS/REDHAT_FAMILY/function_using_{{applied_lxd_role_config.uninstall_config.method}}.yml"
+  when: ( ansible_facts.os_family == 'RedHat' )
+
+- name: "LXD_SERVICE/TASK_UNINSTALL/01c - OS FAMILY = ARCH"
+  include_tasks: "PLATFORMS/ARCH_FAMILY/function_using_{{applied_lxd_role_config.uninstall_config.method}}.yml"
+  when: ( ansible_facts.os_family == 'Archlinux' )
+
+- name: "LXD_SERVICE/TASK_UNINSTALL/01d - OS FAMILY = ALPINE"
+  include_tasks: "PLATFORMS/ALPINE/function_using_{{applied_lxd_role_config.uninstall_config.method}}.yml"
+  when: ( ansible_facts.os_family == 'Alpine' )

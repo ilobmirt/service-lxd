@@ -1,0 +1,123 @@
+#=================================================================================================#
+#ROLE FUNCTION - REDHAT FAMILY - INSTALL LXD THROUGH SNAP PACKAGE MANAGER                         #
+#=================================================================================================#
+
+#-----
+#DNF: Install Snap
+#-----
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/SNAP/01 - Update System Software"
+  ansible.builtin.dnf:
+    update_cache: True
+    name: "*"
+    state: latest
+  become: True
+
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/SNAP/02 - Install snapd and firewalld"
+  ansible.builtin.dnf:
+    name:
+      - snapd
+      - firewalld
+    state: latest
+  become: True
+
+#-----
+# FIREWALLD: enable and start service
+#-----
+
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/SNAP/03 - Enable and start firewalld"
+  ansible.builtin.service:
+    name: firewalld
+    enabled: True
+    state: started
+  become: True
+
+#-----
+#SNAP: Install LXD
+#-----
+
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/SNAP/04 - Getting snapd ready for install"
+  ansible.builtin.service:
+    name: snapd.seeded.service
+    state: started
+  become: True
+
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/SNAP/05 - Install Snap Core"
+  community.general.snap:
+    name: core
+    state: present
+  become: True
+
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/SNAP/06 - Install Snap lxd"
+  community.general.snap:
+    name: lxd
+    state: present
+  become: True
+  register: check_lxd_installed
+
+#-----
+#SYSTEM: Add user to lxd group
+#-----
+
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/SNAP/07 - Verify user is added to the group 'lxd'"
+  ansible.builtin.user:
+    name: "{{applied_lxd_role_config.target_user}}"
+    append: True
+    groups:
+    - lxd
+  become: True
+
+#-----
+#SYSTEM: bin_dir = '/var/lib/snapd/snap/bin'
+#-----
+
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/SNAP/08a - Define the bin_dir with '/var/lib/snapd/snap/bin'"
+  set_fact:
+    fact_append_bin_dir: 
+      bin_dir: '/var/lib/snapd/snap/bin'
+
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/SNAP/08b - Define the bin_dir with '/var/lib/snapd/snap/bin'"
+  set_fact:
+    applied_lxd_role_config: "{{ applied_lxd_role_config | combine(fact_append_bin_dir, recursive=True) }}"
+  when: applied_lxd_role_config.bin_dir|default('')|length<1
+
+#-----
+#SYSTEM: Do we need to include our bin_dir to $PATH?
+#-----
+
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/SNAP/09 - What's our current $PATH ?"
+  ansible.builtin.shell:
+    cmd: "echo $PATH | sed 's|:|\\n|g'"
+    executable: "{{applied_lxd_role_config.using_shell}}"
+  register: check_current_path_command
+
+#-----
+#YES: We append our dir to the system path since it wasn't seen
+#-----
+
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/10a - Set path to defined LDX path"
+  ansible.builtin.copy:
+    src: "{{applied_lxd_role_config.path_script.name}}"
+    dest: "{{applied_lxd_role_config.path_script.target}}/{{applied_lxd_role_config.path_script.name}}"
+    mode: 0644
+    force: False
+  become: True
+  when: (check_lxd_installed.changed == True) and ( applied_lxd_role_config.bin_dir not in check_current_path_command.stdout_lines )
+
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/10b - Set path to defined LDX path"
+  ansible.builtin.lineinfile:
+    state: absent
+    path: "{{applied_lxd_role_config.path_script.target}}/{{applied_lxd_role_config.path_script.name}}"
+    regexp: "^add_to_path \"{{applied_lxd_role_config.bin_dir}}\""
+  check_mode: True
+  changed_when: False
+  register: check_add_path
+  become: True
+  when: (check_lxd_installed.changed == True) and ( applied_lxd_role_config.bin_dir not in check_current_path_command.stdout_lines )
+
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/10c - Set path to defined LDX path"
+  ansible.builtin.lineinfile:
+    state: present
+    path: "{{applied_lxd_role_config.path_script.target}}/{{applied_lxd_role_config.path_script.name}}"
+    line: "add_to_path \"{{applied_lxd_role_config.bin_dir}}\""
+  when: (check_add_path.found is defined) and (check_add_path.found == 0) and (check_lxd_installed.changed == True)  and ( applied_lxd_role_config.bin_dir not in check_current_path_command.stdout_lines )
+  become: True

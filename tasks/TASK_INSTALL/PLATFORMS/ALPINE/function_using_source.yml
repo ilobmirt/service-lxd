@@ -1,0 +1,11 @@
+#=================================================================================================#
+#ROLE FUNCTION - ALPINE - INSTALL LXD THROUGH SOURCE                                       #
+#=================================================================================================#
+
+#-----
+# TO-DO: Actually develop the tasks to build from source for ALPINE. For now, fail.
+#-----
+
+- name: "LXD_SERVICE/TASK_INSTALL/ALPINE/SOURCE/01 - FAIL - UNIMPLEMENTED"
+  ansible.builtin.fail:
+    msg: "Sorry about that, the feature of installing from source for {{ansible_facts.os_family}} is not implemented yet."

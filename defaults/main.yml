@@ -1,0 +1,56 @@
+#=================================================================================================#
+#Group Vars                                                                                       #
+#=================================================================================================#
+
+lxd_service_config: [] #User will edit this to modify test_role_base_config
+
+applied_lxd_role_config:
+  is_cluster: False
+  install_config:
+    method: 'snap'
+    #method: 'source'
+    #method: 'pkgs'
+  uninstall_config:
+    method: 'snap'
+    #method: 'source'
+    #method: 'pkgs'
+  target_user: 'vagrant'
+  role_dir: '/lxd-system'
+  bin_dir: ''
+  using_shell: '/bin/bash'
+  networks:
+    - name: lxdbr0
+      description: ""
+      type: ""
+      project: default
+      config:
+        ipv4.address: auto
+        ipv6.address: none
+  profiles:
+    - name: default
+      description: ""
+      devices:
+        eth0:
+          name: eth0
+          network: lxdbr0
+          type: nic
+        root:
+          path: /
+          pool: default
+          type: disk
+      config: {}
+  storage_pools:
+    - name: default
+      driver: easy_dir
+  path_script:
+    name: 'set_path.sh'
+    target: '/etc/profile.d'
+  init_config:
+    name: 'init-lxd'
+    target: ''
+  tasks:
+    - INSTALL
+    #- CLEAN
+    - UP_STORAGE
+    - UP_SERVICE
+    #- UNINSTALL

@@ -1,0 +1,11 @@
+#=================================================================================================#
+#ROLE FUNCTION - ALPINE - INSTALL LXD THROUGH SNAP PACKAGE MANAGER                         #
+#=================================================================================================#
+
+#-----
+#TO-DO: Install LXD through snapd... unfortuneatly, is not supported for this platform
+#-----
+
+- name: "LXD_SERVICE/TASK_INSTALL/ALPINE/SNAP/01 - FAIL - UNSUPPORTED"
+  ansible.builtin.fail:
+    msg: "Sorry about that, the feature of installing through snapd for {{ansible_facts.os_family}} is not supported by the system."

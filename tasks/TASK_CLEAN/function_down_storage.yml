@@ -1,0 +1,25 @@
+#=================================================================================================#
+#ROLE FUNCTION - Removes all storage pools.                                                       #
+#=================================================================================================#
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_STORAGE/01a - What storage pools do we have?"
+  ansible.builtin.shell:
+    cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc storage list --format yaml"
+    executable: "{{applied_lxd_role_config.using_shell}}"
+  register: clean_storage_list_command
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_STORAGE/01b - What storage pools do we have?"
+  ansible.builtin.set_fact:
+    fact_polled_storage: "{{clean_storage_list_command.stdout | from_yaml}}"
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_STORAGE/02 - Remove Storage - DIR"
+  include_tasks: "RM_STORAGE/function_rm_storage_dir.yml"
+  vars:
+    input_storage: "{{current_storage}}"
+  with_items: "{{ fact_polled_storage | selectattr('driver','equalto','dir') }}"
+  loop_control:
+    loop_var: current_storage
+
+#-----
+#TO_DO: add more ways to remove storage
+#-----

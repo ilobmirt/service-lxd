@@ -1,0 +1,11 @@
+#=================================================================================================#
+#ROLE FUNCTION - ARCH FAMILY - INSTALL LXD THROUGH SYSTEM PACKAGE MANAGER                       #
+#=================================================================================================#
+
+#-----
+#TO-DO: Install lxd through packman... needs to be implemented
+#-----
+
+- name: "LXD_SERVICE/TASK_INSTALL/ARCH_FAMILY/PKGS/01 - FAIL - UNIMPLEMENTED"
+  ansible.builtin.fail:
+    msg: "Sorry about that, the feature of installing through pacman for {{ansible_facts.os_family}} is not implemented yet."

@@ -1,0 +1,11 @@
+#=================================================================================================#
+#ROLE FUNCTION - ALPINE - UNINSTALL LXD THROUGH Package Manager                                   #
+#=================================================================================================#
+
+#-----
+# TO-DO: Actually develop the tasks to uninstall from package manager
+#-----
+
+- name: "LXD_SERVICE/TASK_UNINSTALL/ALPINE/PKGS/01 - FAIL - UNIMPLEMENTED"
+  ansible.builtin.fail:
+    msg: "Sorry about that, the feature of removing lxd using the package manager on {{ansible_facts.os_family}} is not implemented yet."

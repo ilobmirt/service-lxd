@@ -1,0 +1,13 @@
+#=================================================================================================#
+#ROLE MODE - BRING DOWN LXD TO A CLEAN STATE. Done from first cluster node                        #
+#=================================================================================================#
+
+- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/01 - Bring down our containers"
+  include_tasks: "function_down_containers.yml"
+
+- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/02 - Bring down our images"
+  include_tasks: "function_down_images.yml"  
+
+- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/03 - Bring down the cluster"
+  include_tasks: "function_down_cluster.yml"
+      

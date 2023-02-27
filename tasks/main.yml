@@ -1,0 +1,51 @@
+#=================================================================================================#
+#ROLE MAIN SCRIPT                                                                                 #
+#=================================================================================================#
+
+- name: "LXD_SERVICE/MAIN/01 - Merge user edits"
+  set_fact:
+    applied_lxd_role_config: "{{ applied_lxd_role_config | combine( lxd_service_config , recursive=True ) }}"
+
+- name: "LXD_SERVICE/MAIN/02 - Organize order of operations for tasks"
+  set_fact:
+    fact_lxd_role_config_task_upper: "{{applied_lxd_role_config.tasks|upper}}"
+    fact_lxd_role_config_task_order:
+      - 01,INSTALL!
+      - 02,CLEAN!
+      - 03,UP_STORAGE!
+      - 04,UP_SERVICE!
+      - 05,UNINSTALL!
+
+- name: "LXD_SERVICE/MAIN/03a - Get Bin_Dir if not defined"
+  ansible.builtin.shell:
+    cmd: "sudo -u {{applied_lxd_role_config.target_user}} find -P / -name lxd -executable 2> /dev/null | grep bin | sed 's|/[a-zA-Z]*$||'"
+    executable: "{{applied_lxd_role_config.using_shell}}"
+  register: check_bin_dir_command
+  when: (applied_lxd_role_config.bin_dir|default('')|length<1)
+
+- name: "LXD_SERVICE/MAIN/03b - Get Bin_Dir if not defined"
+  set_fact:
+    fact_append_bin_dir: 
+      bin_dir: "{{check_bin_dir_command.stdout_lines[0]|default('')}}"
+  when: (applied_lxd_role_config.bin_dir|default('')|length<1)
+
+- ansible.builtin.debug:
+    msg: "VALUE FOUND: {{fact_append_bin_dir}}"
+  when: (applied_lxd_role_config.bin_dir|default('')|length<1)
+
+- name: "LXD_SERVICE/MAIN/03c - Get Bin_Dir if not defined"
+  set_fact:
+    applied_lxd_role_config: "{{ applied_lxd_role_config | combine(fact_append_bin_dir, recursive=True) }}"
+  when: (applied_lxd_role_config.bin_dir|default('')|length<1)
+
+- name: "LXD_SERVICE/MAIN/04 - Fail if we can't get Bin_Dir"
+  ansible.builtin.fail:
+    msg: "Sorry, Seems like we're coming up short with the bin_dir for LXD. Be sure it will be installed or define the bin_dir yourself."
+  when: (applied_lxd_role_config.bin_dir|default('')|length<1) and ('INSTALL' not in fact_lxd_role_config_task_upper)
+
+- name: "LXD_SERVICE/MAIN/05 - RUN TASKS"
+  include_tasks: "TASK_{{task_item}}/main.yml"
+  when: (task_item in fact_lxd_role_config_task_upper)
+  loop: "{{fact_lxd_role_config_task_order|join('\n')|regex_findall('^[0-9]+[,](.+)!.*','\\1')|upper}}"
+  loop_control:
+    loop_var: task_item

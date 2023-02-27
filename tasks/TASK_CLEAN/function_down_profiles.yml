@@ -1,0 +1,22 @@
+#=================================================================================================#
+#ROLE FUNCTION - Removes all known profiles. Blanks out the default profile.                      #
+#=================================================================================================#
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_PROFILES/01 - What profiles do we have?"
+  ansible.builtin.shell:
+    cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc profile list --format csv | sed 's/,.*//'"
+    executable: "{{applied_lxd_role_config.using_shell}}"
+  register: clean_profile_list_command
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_PROFILES/02 - Delete our non-default profiles"
+  ansible.builtin.shell:
+    cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc profile delete {{ current_container }}"
+    executable: "{{applied_lxd_role_config.using_shell}}"
+  with_items: "{{ clean_profile_list_command.stdout_lines | reject('equalto','default') }}"
+  loop_control:
+    loop_var: current_profile
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_PROFILES/03 - Blank out the default profile"
+  ansible.builtin.shell:
+    cmd: "printf 'config: {}\ndevices: {}' | sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc profile edit default"
+    executable: "{{applied_lxd_role_config.using_shell}}"

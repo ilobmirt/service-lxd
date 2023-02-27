@@ -1,0 +1,32 @@
+config: {}
+
+networks:
+{% for curr_network in applied_lxd_role_config.networks %}
+- {{curr_network }}
+{% endfor %}
+
+storage_pools:
+{% for storage_pool_item in applied_lxd_role_config.storage_pools %}
+{% if storage_pool_item.driver is defined and storage_pool_item.driver == 'easy_dir' %}
+- config:
+    source: {{applied_lxd_role_config.role_dir}}/pools/{{storage_pool_item.name}}
+  description: "Ansible-Configured storage pool for lxd"
+  name: {{storage_pool_item.name}}
+  driver: dir
+{% else %}
+- {{storage_pool_item }}
+{% endif %}
+{% endfor %}
+
+profiles:
+{% for profile_item in applied_lxd_role_config.profiles %}
+- {{profile_item }}
+{% endfor %}
+
+projects: []
+
+cluster:
+  enabled: true
+  server_name: {{input_host.name}}
+  server_address: {{input_host.ipv4}}:{{input_host.port}}
+  cluster_token: {{fact_lxd_role_gen_cluster_token}}

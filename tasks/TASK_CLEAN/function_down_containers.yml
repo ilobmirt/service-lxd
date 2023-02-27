@@ -1,0 +1,22 @@
+#=================================================================================================#
+#ROLE FUNCTION - Brings down all of our running containers then destroys them                     #
+#=================================================================================================#
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_CONTAINERS/01 - Stop all running containers"
+  ansible.builtin.shell:
+    cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc stop --all --force"
+    executable: "{{applied_lxd_role_config.using_shell}}"
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_CONTAINERS/02 - What containers do we have?"
+  ansible.builtin.shell:
+    cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc list --columns n --format csv"
+    executable: "{{applied_lxd_role_config.using_shell}}"
+  register: clean_container_list_command
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_CONTAINERS/03 - Destroy our containters"
+  ansible.builtin.shell:
+    cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc delete {{ current_container }}"
+    executable: "{{applied_lxd_role_config.using_shell}}"
+  with_items: "{{ clean_container_list_command.stdout_lines }}"
+  loop_control:
+    loop_var: current_container
