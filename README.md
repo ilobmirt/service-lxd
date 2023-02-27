@@ -21,7 +21,7 @@ vnode6 ansible_host=█.█.█.6
 vnode7 ansible_host=█.█.█.7
 
 [lxd_hosts:vars]
-ansible_user=vagrant
+ansible_user=lxduser
 ansible_python_interpreter=auto
 ```
 
