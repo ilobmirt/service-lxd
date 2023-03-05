@@ -1,11 +1,12 @@
-#=================================================================================================#
-#ROLE FUNCTION - Brings cluster size down to 1 (database-leader)                                  #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE FUNCTION - Brings cluster size down to 1 (database-leader)                                  #
+# =================================================================================================#
 
 - name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_CLUSTER/01 - Remove cluster nodes from the cluster"
   ansible.builtin.shell:
-    cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc cluster remove {{current_node}}"
-    executable: "{{applied_lxd_role_config.using_shell}}"
-  with_items: "{{input_nodes}}"
+    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc cluster remove {{ current_node }}"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  with_items: "{{ input_nodes }}"
+  changed_when: false
   loop_control:
     loop_var: current_node

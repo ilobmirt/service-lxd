@@ -1,11 +1,11 @@
-#=================================================================================================#
-#ROLE FUNCTION - ALPINE - REMOVE LXD THROUGH SNAP PACKAGE MANAGER                                 #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE FUNCTION - ALPINE - REMOVE LXD THROUGH SNAP PACKAGE MANAGER                                 #
+# =================================================================================================#
 
-#-----
-#TO-DO: Remove LXD through snapd... unfortuneatly, is not supported for this platform
-#-----
+# -----
+# TO-DO: Remove LXD through snapd... unfortuneatly, is not supported for this platform
+# -----
 
- - name: "LXD_SERVICE/TASK_UNINSTALL/ALPINE/SNAP/01 - FAIL - UNSUPPORTED"
-   ansible.builtin.fail:
-     msg: "Sorry about that, the feature of removing LXD through snapd for {{ansible_facts.os_family}} is not supported by the system."
+- name: "LXD_SERVICE/TASK_UNINSTALL/ALPINE/SNAP/01 - FAIL - UNSUPPORTED"
+  ansible.builtin.fail:
+    msg: "Sorry about that, the feature of removing LXD through snapd for {{ ansible_facts.os_family }} is not supported by the system."

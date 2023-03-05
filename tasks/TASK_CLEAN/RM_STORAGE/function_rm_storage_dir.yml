@@ -1,14 +1,15 @@
-#=================================================================================================#
-#ROLE FUNCTION - Remove DIR based storage                                                         #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE FUNCTION - Remove DIR based storage                                                         #
+# =================================================================================================#
 
 - name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_RM_STORAGE_DIR/01 - Remove the pool"
   ansible.builtin.shell:
-    cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc storage delete {{input_storage.name}} --force-local "
-    executable: "{{applied_lxd_role_config.using_shell}}"
+    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc storage delete {{ input_storage.name }} --force-local "
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  changed_when: false
 
 - name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_RM_STORAGE_DIR/02 - Remove the Directory"
   ansible.builtin.file:
     path: "{{ input_storage.config.source | default('/This_Folder_Doesnt_Exist') }}"
     state: absent
-  become: True
+  become: true

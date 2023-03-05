@@ -1,54 +1,60 @@
-#=================================================================================================#
-#ROLE FUNCTION - LXD Initialization without clustering                                            #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE FUNCTION - LXD Initialization without clustering                                            #
+# =================================================================================================#
 
 - name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NODE/01a - Generate the connection key"
   ansible.builtin.shell:
-    cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc cluster add {{ input_host.name }}"
-    executable: "{{applied_lxd_role_config.using_shell}}"
+    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc cluster add {{ input_host.name }}"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
   register: add_node_key_command
+  changed_when: false
 
 - name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NODE/01b - Generate the connection key"
-  set_fact:
+  ansible.builtin.set_fact:
     fact_lxd_role_gen_cluster_token: "{{ add_node_key_command.stdout_lines[1] }}"
   delegate_to: "{{ input_host.name }}"
 
 - name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NODE/02 - Build init config for lxd"
   ansible.builtin.template:
-    src: "{{applied_lxd_role_config.init_config.name}}.join.yml.j2"
-    dest: "{{applied_lxd_role_config.role_dir}}/{{applied_lxd_role_config.init_config.target}}{{applied_lxd_role_config.init_config.name}}.yml"
-  become: True
+    src: "{{ applied_lxd_role_config.init_config.name }}.join.yml.j2"
+    dest: "{{ applied_lxd_role_config.role_dir }}/{{ applied_lxd_role_config.init_config.target }}{{ applied_lxd_role_config.init_config.name }}.yml"
+    mode: "0644"
+  become: true
   delegate_to: "{{ input_host.name }}"
   register: check_add_config
 
-#-----
+# -----
 # FIREWALLD: enable port
-#-----
+# -----
 - name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NODE/03 - Enable port for service"
   ansible.posix.firewalld:
     zone: public
-    port: "{{input_host.port}}/tcp"
-    permanent: True
+    port: "{{ input_host.port }}/tcp"
+    permanent: true
     state: enabled
-  become: True
+  become: true
   delegate_to: "{{ input_host.name }}"
   register: firewalld_enable_port_action
 
 - name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NODE/04 - reload config"
+  # noqa: no-handler
   ansible.builtin.shell:
     cmd: "firewall-cmd --reload"
-    executable: "{{applied_lxd_role_config.using_shell}}"
-  become: True
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  changed_when: false
+  become: true
   delegate_to: "{{ input_host.name }}"
-  when: (firewalld_enable_port_action.changed == True)
+  when: ( firewalld_enable_port_action.changed )
 
-#-----
+# -----
 # LXD: Connect with start node
-#-----
+# -----
 
 - name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NODE/05 - Init role from config"
+  # noqa: no-handler yaml[line-length]
   ansible.builtin.shell:
-    cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxd init --preseed < {{applied_lxd_role_config.role_dir}}/{{applied_lxd_role_config.init_config.target}}{{applied_lxd_role_config.init_config.name}}.yml"
-    executable: "{{applied_lxd_role_config.using_shell}}"
+    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxd init --preseed < {{ applied_lxd_role_config.role_dir }}/{{ applied_lxd_role_config.init_config.target }}{{ applied_lxd_role_config.init_config.name }}.yml"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
   delegate_to: "{{ input_host.name }}"
-  when: check_add_config.changed == True
+  when: ( check_add_config.changed )
+  changed_when: false

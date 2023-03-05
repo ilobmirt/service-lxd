@@ -1,19 +1,19 @@
-#=================================================================================================#
-#Group Vars                                                                                       #
-#=================================================================================================#
+ # =================================================================================================#
+ # Group Vars                                                                                       #
+ # =================================================================================================#
 
-lxd_service_config: [] #User will edit this to modify test_role_base_config
+lxd_service_config: [] # User will edit this to modify test_role_base_config
 
 applied_lxd_role_config:
-  is_cluster: False
+  is_cluster: false
   install_config:
     method: 'snap'
-    #method: 'source'
-    #method: 'pkgs'
+    # method: 'source'
+    # method: 'pkgs'
   uninstall_config:
     method: 'snap'
-    #method: 'source'
-    #method: 'pkgs'
+    # method: 'source'
+    # method: 'pkgs'
   target_user: 'vagrant'
   role_dir: '/lxd-system'
   bin_dir: ''
@@ -50,7 +50,7 @@ applied_lxd_role_config:
     target: ''
   tasks:
     - INSTALL
-    #- CLEAN
+    # - CLEAN
     - UP_STORAGE
     - UP_SERVICE
-    #- UNINSTALL
+    # - UNINSTALL

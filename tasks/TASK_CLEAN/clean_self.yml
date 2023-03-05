@@ -1,9 +1,9 @@
-#=================================================================================================#
-#ROLE MODE - BRING DOWN LXD TO A CLEAN STATE. For each non-cluster node                           #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE MODE - BRING DOWN LXD TO A CLEAN STATE. For each non-cluster node                           #
+# =================================================================================================#
 
 - name: "LXD_SERVICE/TASK_CLEAN/SELF/01 - Bring down our containers"
-  include_tasks: "function_down_containers.yml"
+  ansible.builtin.include_tasks: "function_down_containers.yml"
 
 - name: "LXD_SERVICE/TASK_CLEAN/SELF/02 - Bring down our images"
-  include_tasks: "function_down_images.yml"  
+  ansible.builtin.include_tasks: "function_down_images.yml"

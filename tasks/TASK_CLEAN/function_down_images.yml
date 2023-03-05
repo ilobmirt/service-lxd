@@ -1,17 +1,19 @@
-#=================================================================================================#
-#ROLE FUNCTION - Removes all stored images                                                        #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE FUNCTION - Removes all stored images                                                        #
+# =================================================================================================#
 
 - name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_IMAGES/01 - What images do we have?"
   ansible.builtin.shell:
-    cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc image list --columns f --format csv"
-    executable: "{{applied_lxd_role_config.using_shell}}"
+    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc image list --columns f --format csv"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
   register: clean_container_image_list_command
+  changed_when: false
 
 - name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_IMAGES/02 - Remove our stored images"
   ansible.builtin.shell:
-    cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc image delete {{ current_image }}"
-    executable: "{{applied_lxd_role_config.using_shell}}"
+    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc image delete {{ current_image }}"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
   with_items: "{{ clean_container_image_list_command.stdout_lines }}"
+  changed_when: false
   loop_control:
     loop_var: current_image

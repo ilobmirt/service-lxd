@@ -1,48 +1,48 @@
-#=================================================================================================#
-#ROLE MODE - Setup the LXD service of the host                                                    #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE MODE - Setup the LXD service of the host                                                    #
+# =================================================================================================#
 
 - name: "LXD_SERVICE/TASK_UP_SERVICE/01a - Preload Vars"
-  set_fact:
-    fact_lxd_role_is_cluster: "{{ (applied_lxd_role_config.is_cluster is defined) and (applied_lxd_role_config.is_cluster == True) | ternary(True, False, False) }}"
+  ansible.builtin.set_fact:
+    fact_lxd_role_is_cluster: "{{ (applied_lxd_role_config.is_cluster | default(false) == true) | ternary(True, False, False) }}"
 
 - name: "IS it a cluster?"
   ansible.builtin.debug:
-    msg: "VALUE = {{fact_lxd_role_is_cluster}}"
+    msg: "VALUE = {{ fact_lxd_role_is_cluster }}"
 
 - name: "LXD_SERVICE/TASK_UP_SERVICE/01b - Preload Vars"
-  set_fact:
+  ansible.builtin.set_fact:
     fact_lxd_role_cluster_group: "{{ group_names[0] }}"
-  when: (fact_lxd_role_is_cluster == True)
+  when: ( fact_lxd_role_is_cluster )
 
 - name: "LXD_SERVICE/TASK_UP_SERVICE/01c - Preload Vars"
-  set_fact:
+  ansible.builtin.set_fact:
     fact_lxd_role_cluster_start: "{{ groups[fact_lxd_role_cluster_group] | first }}"
-  when: (fact_lxd_role_is_cluster == True)
+  when: ( fact_lxd_role_is_cluster )
 
 - name: "LXD_SERVICE/TASK_UP_SERVICE/02 - Init for itself"
-  include_tasks: func_init_self.yml
-  when: (fact_lxd_role_is_cluster == False)
+  ansible.builtin.include_tasks: func_init_self.yml
+  when: ( not fact_lxd_role_is_cluster )
 
 - name: "LXD_SERVICE/TASK_UP_SERVICE/03a - Init for cluster"
-  include_tasks: func_init_cluster_start.yml
+  ansible.builtin.include_tasks: func_init_cluster_start.yml
   vars:
     input_host:
       ipv4: "{{ hostvars[inventory_hostname].ansible_host }}"
       port: 8443
       name: "{{ inventory_hostname }}"
-  when: (fact_lxd_role_is_cluster == True) and ( inventory_hostname == fact_lxd_role_cluster_start )
+  when: ( fact_lxd_role_is_cluster ) and ( inventory_hostname == fact_lxd_role_cluster_start )
 
-#I know it's a bit convoluted here, but the idea is to connect each node to the start server one at a time
+# I know it's a bit convoluted here, but the idea is to connect each node to the start server one at a time
 - name: "LXD_SERVICE/TASK_UP_SERVICE/03b - Init for cluster"
-  include_tasks: func_init_cluster_node.yml
+  ansible.builtin.include_tasks: func_init_cluster_node.yml
   vars:
     start_host: "{{ fact_lxd_role_cluster_start }}"
     input_host:
       ipv4: "{{ hostvars[current_host].ansible_host }}"
       port: 8443
       name: "{{ current_host }}"
-  with_items: "{{ groups[fact_lxd_role_cluster_group] | reject('equalto',fact_lxd_role_cluster_start) }}"
+  with_items: "{{ groups[fact_lxd_role_cluster_group] | reject('equalto', fact_lxd_role_cluster_start) }}"
   loop_control:
     loop_var: current_host
-  when: (fact_lxd_role_is_cluster == True) and ( inventory_hostname == fact_lxd_role_cluster_start )
+  when: ( fact_lxd_role_is_cluster ) and ( inventory_hostname == fact_lxd_role_cluster_start )

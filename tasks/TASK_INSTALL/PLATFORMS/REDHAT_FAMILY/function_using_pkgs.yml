@@ -1,7 +1,7 @@
-#=================================================================================================#
-#ROLE FUNCTION - REDHAT FAMILY - INSTALL LXD THROUGH SYSTEM PACKAGE MANAGER                       #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE FUNCTION - REDHAT FAMILY - INSTALL LXD THROUGH SYSTEM PACKAGE MANAGER                       #
+# =================================================================================================#
 
 - name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/PKGS/01 - FAIL - NOT SUPPORTED"
   ansible.builtin.fail:
-    msg: "Sorry about that, the feature of installing from your system's package manager for {{ansible_facts.os_family}} is not supported."
+    msg: "Sorry about that, the feature of installing from your system's package manager for {{ ansible_facts.os_family }} is not supported."

@@ -1,73 +1,76 @@
-#=================================================================================================#
-#ROLE MODE - BRING DOWN LXD TO A CLEAN STATE. USEFUL FOR REINIT. THIS IS A DESTRUCTIVE TASK.      #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE MODE - BRING DOWN LXD TO A CLEAN STATE. USEFUL FOR REINIT. THIS IS A DESTRUCTIVE TASK.      #
+# =================================================================================================#
 
-#-----
-#Determine if existing group of nodes were clustered
-#-----
+# -----
+# Determine if existing group of nodes were clustered
+# -----
+
 - name: "LXD_SERVICE/TASK_CLEAN/01 - What is the group name used for the LXD role?"
-  set_fact:
+  ansible.builtin.set_fact:
     fact_lxd_role_cluster_group: "{{ group_names[0] }}"
-    fact_lxd_role_determine_cluster: True
-  run_once: True
+    fact_lxd_role_determine_cluster: true
+  run_once: true
 
 - name: "LXD_SERVICE/TASK_CLEAN/02 - What would be our first node of our supposed cluster group?"
-  set_fact:
+  ansible.builtin.set_fact:
     fact_lxd_role_cluster_start: "{{ groups[fact_lxd_role_cluster_group] | first }}"
-  run_once: True
+  run_once: true
 
-- block:
-    - name: "LXD_SERVICE/TASK_CLEAN/03a - Check for clusters at this node"
+- name: "LXD_SERVICE/TASK_CLEAN/03 - Determine if this is a cluster"
+  block:
+    - name: "LXD_SERVICE/TASK_CLEAN/03a - Cluster list command"
       ansible.builtin.shell:
-        cmd: "sudo -u {{applied_lxd_role_config.target_user}} {{applied_lxd_role_config.bin_dir}}/lxc cluster list --format csv | sed 's/,.*//'"
-        executable: "{{applied_lxd_role_config.using_shell}}"
+        cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc cluster list --format csv | sed 's/,.*//'"
+        executable: "{{ applied_lxd_role_config.using_shell }}"
       delegate_to: "{{ fact_lxd_role_cluster_start }}"
       register: check_cluster_list_command
-      run_once: True
+      changed_when: false
+      run_once: true
   rescue:
-    - name: "LXD_SERVICE/TASK_CLEAN/03b - Check for clusters at this node"
-      set_fact:
-        fact_lxd_role_determine_cluster: False
+    - name: "LXD_SERVICE/TASK_CLEAN/03b - Lxd server isn't part of a cluster"
+      ansible.builtin.set_fact:
+        fact_lxd_role_determine_cluster: false
       when: check_cluster_list_command.stderr  | match("LXD server isn't part of a cluster")
-      run_once: True
+      run_once: true
   always:
     - name: "LXD_SERVICE/TASK_CLEAN/03c - Check for clusters at this node"
-      set_fact:
-        fact_lxd_role_determine_cluster: False
-      when: (fact_lxd_role_determine_cluster == True) and ( check_cluster_list_command.stdout_lines|reject('equalto',fact_lxd_role_cluster_start)|length<1 )
-      run_once: True
+      ansible.builtin.set_fact:
+        fact_lxd_role_determine_cluster: false
+      when: ( fact_lxd_role_determine_cluster ) and ( check_cluster_list_command.stdout_lines | reject('equalto', fact_lxd_role_cluster_start) | length<1 )
+      run_once: true
 
-#-----
+# -----
 # YES: Our nodes were determined to be clustered
-#-----
+# -----
 
 - name: "LXD_SERVICE/TASK_CLEAN/04a - Cluster specific cleanup operations"
-  include_tasks: "clean_cluster.yml"
+  ansible.builtin.include_tasks: "clean_cluster.yml"
   vars:
-    input_nodes: "{{check_cluster_list_command.stdout_lines|reject('equalto',fact_lxd_role_cluster_start)}}"
-  run_once: True
-  when: (fact_lxd_role_determine_cluster == True) and (inventory_hostname == fact_lxd_role_cluster_start)
+    input_nodes: "{{ check_cluster_list_command.stdout_lines | reject('equalto', fact_lxd_role_cluster_start) }}"
+  run_once: true
+  when: ( fact_lxd_role_determine_cluster ) and (inventory_hostname == fact_lxd_role_cluster_start)
 
-#-----
+# -----
 # NO: All these nodes are independent LXD hosts
-#-----
+# -----
 
 - name: "LXD_SERVICE/TASK_CLEAN/04b - independent node specific cleanup operations"
-  include_tasks: "clean_self.yml"
-  when: (fact_lxd_role_determine_cluster == False)
+  ansible.builtin.include_tasks: "clean_self.yml"
+  when: ( not fact_lxd_role_determine_cluster )
 
-#-----
+# -----
 # ALL: Shared logic for both
-#-----
+# -----
 
 - name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/04 - Bring down our profiles. Blank out our default profile"
-  include_tasks: "function_down_profiles.yml"
+  ansible.builtin.include_tasks: "function_down_profiles.yml"
 
 - name: "LXD_SERVICE/TASK_CLEAN/05 - Bring down our storage"
-  include_tasks: "function_down_storage.yml"
+  ansible.builtin.include_tasks: "function_down_storage.yml"
 
 - name: "LXD_SERVICE/TASK_CLEAN/06 - Remove init config"
   ansible.builtin.file:
-    path: "{{applied_lxd_role_config.role_dir}}/{{applied_lxd_role_config.init_config.target}}{{applied_lxd_role_config.init_config.name}}.yml"
+    path: "{{ applied_lxd_role_config.role_dir }}/{{ applied_lxd_role_config.init_config.target }}{{ applied_lxd_role_config.init_config.name }}.yml"
     state: absent
-  become: True
+  become: true

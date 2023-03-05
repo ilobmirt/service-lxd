@@ -1,11 +1,11 @@
-#=================================================================================================#
-#ROLE FUNCTION - DEBIAN FAMILY - UNINSTALL LXD THROUGH SOURCE                                     #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE FUNCTION - DEBIAN FAMILY - UNINSTALL LXD THROUGH SOURCE                                     #
+# =================================================================================================#
 
-#-----
+# -----
 # TO-DO: Actually develop the tasks to uninstall a source build.
-#-----
+# -----
 
 - name: "LXD_SERVICE/TASK_UNINSTALL/DEBIAN_FAMILY/SOURCE/01 - FAIL - UNIMPLEMENTED"
   ansible.builtin.fail:
-    msg: "Sorry about that, the feature of removing lxd that was built from source for {{ansible_facts.os_family}} is not implemented yet."
+    msg: "Sorry about that, the feature of removing lxd that was built from source for {{ ansible_facts.os_family }} is not implemented yet."

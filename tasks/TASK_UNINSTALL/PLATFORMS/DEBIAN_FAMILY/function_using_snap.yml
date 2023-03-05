@@ -1,43 +1,44 @@
-#=================================================================================================#
-#ROLE FUNCTION - DEBIAN FAMILY - REMOVE LXD THROUGH SNAP PACKAGE MANAGER                          #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE FUNCTION - DEBIAN FAMILY - REMOVE LXD THROUGH SNAP PACKAGE MANAGER                          #
+# =================================================================================================#
 
-#-----
-#SNAP: Remove LXD
-#-----
+# -----
+# SNAP: Remove LXD
+# -----
 
 - name: "LXD_SERVICE/TASK_UNINSTALL/DEBIAN_FAMILY/SNAP/01 - Remove Snap lxd"
   community.general.snap:
     name: lxd
     state: absent
-  become: True
+  become: true
   register: check_lxd_removed
 
-#-----
+# -----
 # SYSTEM: We can remove snap if LXD was the only thing used by snap
-#-----
+# -----
 
 - name: "LXD_SERVICE/TASK_UNINSTALL/DEBIAN_FAMILY/SNAP/02 - Is snapd used by anything else?"
   ansible.builtin.shell:
-    cmd: "sudo -u {{applied_lxd_role_config.target_user}} snap list | sed '1d' | sed 's|\\s.*||' | sed '/^core[0-9]\\{0,2\\}$/d' "
-    executable: "{{applied_lxd_role_config.using_shell}}"
+    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} snap list | sed '1d' | sed 's|\\s.*||' | sed '/^core[0-9]\\{0,2\\}$/d' "
+    executable: "{{ applied_lxd_role_config.using_shell }}"
   register: snapd_installed_list_command
+  changed_when: false
 
-#-----
+# -----
 # EMPTY: We remove snapd as well as it is not used anywhere else
-#-----
+# -----
 
 - name: "LXD_SERVICE/TASK_UNINSTALL/DEBIAN_FAMILY/SNAP/03 - Clean snapd as well"
   ansible.builtin.apt:
     name: snapd
     state: absent
-  become: True
-  when: (snapd_installed_list_command.stdout_lines|length<1)
+  become: true
+  when: (snapd_installed_list_command.stdout_lines | length<1)
 
 - name: "LXD_SERVICE/TASK_UNINSTALL/DEBIAN_FAMILY/SNAP/04 - Clean include directory"
   ansible.builtin.lineinfile:
     state: absent
-    path: "{{applied_lxd_role_config.path_script.target}}/{{applied_lxd_role_config.path_script.name}}"
+    path: "{{ applied_lxd_role_config.path_script.target }}/{{ applied_lxd_role_config.path_script.name }}"
     regexp: "^add_to_path \"/snap/bin\""
-  become: True
-  when: (snapd_installed_list_command.stdout_lines|length<1)
+  become: true
+  when: (snapd_installed_list_command.stdout_lines | length<1)

@@ -1,11 +1,11 @@
-#=================================================================================================#
-#ROLE FUNCTION - ARCH FAMILY - INSTALL LXD THROUGH SNAP PACKAGE MANAGER                         #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE FUNCTION - ARCH FAMILY - INSTALL LXD THROUGH SNAP PACKAGE MANAGER                           #
+# =================================================================================================#
 
-#-----
-#TO-DO: Install Snap through AUR... unfortuneatly, with what Ansible module?
-#-----
+# -----
+# TO-DO: Install Snap through AUR... unfortuneatly, with what Ansible module?
+# -----
 
 - name: "LXD_SERVICE/TASK_INSTALL/ARCH_FAMILY/SNAP/01 - FAIL - UNIMPLEMENTED"
   ansible.builtin.fail:
-    msg: "Sorry about that, the feature of installing through snapd for {{ansible_facts.os_family}} is not implemented yet."
+    msg: "Sorry about that, the feature of installing through snapd for {{ ansible_facts.os_family }} is not implemented yet."

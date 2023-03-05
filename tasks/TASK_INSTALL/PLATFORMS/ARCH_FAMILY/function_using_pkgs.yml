@@ -1,11 +1,11 @@
-#=================================================================================================#
-#ROLE FUNCTION - ALPINE - INSTALL LXD THROUGH SYSTEM PACKAGE MANAGER                       #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE FUNCTION - ALPINE - INSTALL LXD THROUGH SYSTEM PACKAGE MANAGER                              #
+# =================================================================================================#
 
-#-----
-#TO-DO: Install lxd through apk... needs to be implemented
-#-----
+# -----
+# TO-DO: Install lxd through apk... needs to be implemented
+# -----
 
 - name: "LXD_SERVICE/TASK_INSTALL/ALPINE/PKGS/01 - FAIL - UNIMPLEMENTED"
   ansible.builtin.fail:
-    msg: "Sorry about that, the feature of installing through APK for {{ansible_facts.os_family}} is not implemented yet."
+    msg: "Sorry about that, the feature of installing through APK for {{ ansible_facts.os_family }} is not implemented yet."

@@ -1,17 +1,18 @@
-#=================================================================================================#
-#ROLE MODE - INITIALIZE STORAGE                                                                   #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE MODE - INITIALIZE STORAGE                                                                   #
+# =================================================================================================#
 
 - name: "LXD_SERVICE/TASK_UP_STORAGE/01 - Make LXD Environment Base"
   ansible.builtin.file:
-    path: "{{applied_lxd_role_config.role_dir}}"
+    path: "{{ applied_lxd_role_config.role_dir }}"
     state: directory
-  become: True
+    mode: "0644"
+  become: true
 
 - name: "LXD_SERVICE/TASK_UP_STORAGE/02 - Add all easy_dirs"
-  include_tasks: func_easy_dir.yml
+  ansible.builtin.include_tasks: func_easy_dir.yml
   vars:
-    input_store: "{{current_store}}"
-  with_items: "{{applied_lxd_role_config.storage_pools | selectattr('driver','equalto','easy_dir') }}"
+    input_store: "{{ current_store }}"
+  with_items: "{{ applied_lxd_role_config.storage_pools | selectattr('driver', 'equalto', 'easy_dir') }}"
   loop_control:
     loop_var: current_store

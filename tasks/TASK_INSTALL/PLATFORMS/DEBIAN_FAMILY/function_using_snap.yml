@@ -1,122 +1,123 @@
-#=================================================================================================#
-#ROLE FUNCTION - DEBIAN FAMILY - INSTALL LXD THROUGH SNAP PACKAGE MANAGER                         #
-#=================================================================================================#
+# =================================================================================================#
+# ROLE FUNCTION - DEBIAN FAMILY - INSTALL LXD THROUGH SNAP PACKAGE MANAGER                         #
+# =================================================================================================#
 
-#-----
-#APT: Install Snap
-#-----
+# -----
+# APT: Install Snap
+# -----
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/01 - Update System Software"
   ansible.builtin.apt:
-    update_cache: True
+    update_cache: true
     upgrade: full
-  become: True
+  become: true
 
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/02 - Install snapd and firewalld"
   ansible.builtin.apt:
     name:
       - snapd
       - firewalld
-    state: latest
-  become: True
+    state: present
+  become: true
 
-#-----
+# -----
 # FIREWALLD: enable and start service
-#-----
+# -----
 
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/03 - Enable and start firewalld"
   ansible.builtin.service:
     name: firewalld
-    enabled: True
+    enabled: true
     state: started
-  become: True
+  become: true
 
-#-----
-#SNAP: Install LXD
-#-----
+# -----
+# SNAP: Install LXD
+# -----
 
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/04 - Getting snapd ready for install"
   ansible.builtin.service:
     name: snapd.seeded.service
     state: started
-  become: True
+  become: true
 
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/05 - Install Snap Core"
   community.general.snap:
     name: core
     state: present
-  become: True
+  become: true
 
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/06 - Install Snap lxd"
   community.general.snap:
     name: lxd
     state: present
-  become: True
+  become: true
   register: check_lxd_installed
 
-#-----
-#SYSTEM: Add user to lxd group
-#-----
+# -----
+# SYSTEM: Add user to lxd group
+# -----
 
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/07 - Verify user is added to the group 'lxd'"
   ansible.builtin.user:
-    name: "{{applied_lxd_role_config.target_user}}"
-    append: True
+    name: "{{ applied_lxd_role_config.target_user }}"
+    append: true
     groups:
-    - lxd
-  become: True
+      - lxd
+  become: true
 
-#-----
-#SYSTEM: bin_dir = '/snap/bin'
-#-----
+# -----
+# SYSTEM: bin_dir = '/snap/bin'
+# -----
 
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/08a - Define the bin_dir with '/snap/bin'"
-  set_fact:
-    fact_append_bin_dir: 
+  ansible.builtin.set_fact:
+    fact_append_bin_dir:
       bin_dir: '/snap/bin'
 
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/08b - Define the bin_dir with '/snap/bin'"
-  set_fact:
-    applied_lxd_role_config: "{{ applied_lxd_role_config | combine(fact_append_bin_dir, recursive=True) }}"
-  when: applied_lxd_role_config.bin_dir|default('')|length<1
+  ansible.builtin.set_fact:
+    applied_lxd_role_config: "{{ applied_lxd_role_config | combine(fact_append_bin_dir, recursive=true) }}"
+  when: applied_lxd_role_config.bin_dir|default('') | length<1
 
-#-----
-#SYSTEM: Do we need to include our bin_dir to $PATH?
-#-----
+# -----
+# SYSTEM: Do we need to include our bin_dir to $PATH?
+# -----
 
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/09 - What's our current $PATH ?"
   ansible.builtin.shell:
     cmd: "echo $PATH | sed 's|:|\\n|g'"
-    executable: "{{applied_lxd_role_config.using_shell}}"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
   register: check_current_path_command
+  changed_when: false
 
-#-----
-#YES: We append our dir to the system path since it wasn't seen
-#-----
+# -----
+# YES: We append our dir to the system path since it wasn't seen
+# -----
 
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/10a - Set path to defined LDX path"
   ansible.builtin.copy:
-    src: "{{applied_lxd_role_config.path_script.name}}"
-    dest: "{{applied_lxd_role_config.path_script.target}}/{{applied_lxd_role_config.path_script.name}}"
-    mode: 0644
-    force: False
-  become: True
-  when: (check_lxd_installed.changed == True) and ( applied_lxd_role_config.bin_dir not in check_current_path_command.stdout_lines )
+    src: "{{ applied_lxd_role_config.path_script.name }}"
+    dest: "{{ applied_lxd_role_config.path_script.target }}/{{ applied_lxd_role_config.path_script.name }}"
+    mode: "0644"
+    force: false
+  become: true
+  when: (check_lxd_installed.changed ) and ( applied_lxd_role_config.bin_dir not in check_current_path_command.stdout_lines )
 
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/10b - Set path to defined LDX path"
   ansible.builtin.lineinfile:
     state: absent
-    path: "{{applied_lxd_role_config.path_script.target}}/{{applied_lxd_role_config.path_script.name}}"
-    regexp: "^add_to_path \"{{applied_lxd_role_config.bin_dir}}\""
-  check_mode: True
-  changed_when: False
+    path: "{{ applied_lxd_role_config.path_script.target }}/{{ applied_lxd_role_config.path_script.name }}"
+    regexp: "^add_to_path \"{{ applied_lxd_role_config.bin_dir }}\""
+  check_mode: true
+  changed_when: false
   register: check_add_path
-  become: True
-  when: (check_lxd_installed.changed == True) and ( applied_lxd_role_config.bin_dir not in check_current_path_command.stdout_lines )
+  become: true
+  when: (check_lxd_installed.changed ) and ( applied_lxd_role_config.bin_dir not in check_current_path_command.stdout_lines )
 
 - name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/10c - Set path to defined LDX path"
   ansible.builtin.lineinfile:
     state: present
-    path: "{{applied_lxd_role_config.path_script.target}}/{{applied_lxd_role_config.path_script.name}}"
-    line: "add_to_path \"{{applied_lxd_role_config.bin_dir}}\""
-  when: (check_add_path.found is defined) and (check_add_path.found == 0) and (check_lxd_installed.changed == True)  and ( applied_lxd_role_config.bin_dir not in check_current_path_command.stdout_lines )
-  become: True
+    path: "{{ applied_lxd_role_config.path_script.target }}/{{ applied_lxd_role_config.path_script.name }}"
+    line: "add_to_path \"{{ applied_lxd_role_config.bin_dir }}\""
+  when: (check_add_path.found | default(999) == 0) and ( applied_lxd_role_config.bin_dir not in check_current_path_command.stdout_lines )
+  become: true
