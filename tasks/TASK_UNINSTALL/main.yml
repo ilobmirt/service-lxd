@@ -17,3 +17,9 @@
 - name: "LXD_SERVICE/TASK_UNINSTALL/01d - OS FAMILY = ALPINE"
   ansible.builtin.include_tasks: "PLATFORMS/ALPINE/function_using_{{ applied_lxd_role_config.uninstall_config.method }}.yml"
   when: ( ansible_facts.os_family == 'Alpine' )
+
+- name: "LXD_SERVICE/TASK_UNINSTALL/02 - Remove role dir"
+  ansible.builtin.file:
+    path: "{{ applied_lxd_role_config.role_dir }}"
+    state: absent
+  become: true
