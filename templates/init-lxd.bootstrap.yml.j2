@@ -8,9 +8,9 @@ networks:
 
 storage_pools:
 {% for storage_pool_item in applied_lxd_role_config.storage_pools %}
-{% if storage_pool_item.driver is defined and storage_pool_item.driver == 'easy_dir' %}
+{% if storage_pool_item.driver is defined and storage_pool_item.driver == 'role_dir' %}
 - config:
-    source: {{applied_lxd_role_config.role_dir}}/pools/{{storage_pool_item.name}}
+    source: {{applied_lxd_role_config.role_dir}}/pools/dir/{{storage_pool_item.name}}
   description: "Ansible-Configured storage pool for lxd"
   name: {{storage_pool_item.name}}
   driver: dir
