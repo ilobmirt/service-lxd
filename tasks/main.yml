@@ -4,7 +4,7 @@
 
 - name: "LXD_SERVICE/MAIN/01 - Merge user edits"
   ansible.builtin.set_fact:
-    applied_lxd_role_config: applied_lxd_role_config | combine( lxd_service_config , recursive=True )
+    applied_lxd_role_config: "{{ applied_lxd_role_config | combine(lxd_service_config, recursive=true) }}"
 
 - name: "LXD_SERVICE/MAIN/02 - Organize order of operations for tasks"
   ansible.builtin.set_fact:
@@ -22,13 +22,13 @@
     executable: "{{ applied_lxd_role_config.using_shell }}"
   register: check_bin_dir_command
   changed_when: false
-  when: (applied_lxd_role_config.bin_dir|default('')|length<1)
+  when: ( applied_lxd_role_config.bin_dir | default('') | length<1 )
 
 - name: "LXD_SERVICE/MAIN/03b - Get Bin_Dir if not defined"
   ansible.builtin.set_fact:
     fact_append_bin_dir:
-      bin_dir: check_bin_dir_command.stdout_lines[0] | default('')
-  when: (applied_lxd_role_config.bin_dir|default('')|length<1)
+      bin_dir: "{{ check_bin_dir_command.stdout_lines[0] | default('') }}"
+  when: ( applied_lxd_role_config.bin_dir | default('') | length<1 )
 
 - name: "LXD_SERVICE/MAIN/03c - Get Bin_Dir if not defined"
   ansible.builtin.debug:
