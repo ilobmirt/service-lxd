@@ -18,7 +18,7 @@
 
 - name: "LXD_SERVICE/MAIN/03a - Get Bin_Dir if not defined"
   ansible.builtin.shell:
-    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} find -P / -name lxd -type f  2> /dev/null | grep bin | sed 's|/[a-zA-Z]*$||'"
+    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} find -P / -name lxd 2> /dev/null | grep bin | sed 's|/[a-zA-Z]*$||'"
     executable: "{{ applied_lxd_role_config.using_shell }}"
   register: check_bin_dir_command
   changed_when: false
