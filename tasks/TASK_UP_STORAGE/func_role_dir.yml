@@ -10,7 +10,7 @@
   ansible.builtin.file:
     path: "{{ fact_pool_target_dir }}"
     state: directory
-    mode: "0644"
+    mode: "0755"
   become: true
   register: check_add_storage
 
