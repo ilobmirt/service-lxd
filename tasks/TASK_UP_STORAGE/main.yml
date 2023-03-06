@@ -6,13 +6,13 @@
   ansible.builtin.file:
     path: "{{ applied_lxd_role_config.role_dir }}"
     state: directory
-    mode: "0644"
+    mode: "0755"
   become: true
 
-- name: "LXD_SERVICE/TASK_UP_STORAGE/02 - Add all easy_dirs"
-  ansible.builtin.include_tasks: func_easy_dir.yml
+- name: "LXD_SERVICE/TASK_UP_STORAGE/02 - Add all role_dirs"
+  ansible.builtin.include_tasks: func_role_dir.yml
   vars:
     input_store: "{{ current_store }}"
-  with_items: "{{ applied_lxd_role_config.storage_pools | selectattr('driver', 'equalto', 'easy_dir') }}"
+  with_items: "{{ applied_lxd_role_config.storage_pools | selectattr('driver', 'equalto', 'role_dir') }}"
   loop_control:
     loop_var: current_store
