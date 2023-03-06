@@ -41,7 +41,7 @@ applied_lxd_role_config:
       config: {}
   storage_pools:
     - name: default
-      driver: easy_dir
+      driver: role_dir
   path_script:
     name: 'set_path.sh'
     target: '/etc/profile.d'
