@@ -48,8 +48,8 @@
   ansible.builtin.include_tasks: "clean_cluster.yml"
   vars:
     input_nodes: "{{ check_cluster_list_command.stdout_lines | reject('equalto', fact_lxd_role_cluster_start) }}"
-  run_once: true
-  when: ( fact_lxd_role_determine_cluster ) and (inventory_hostname == fact_lxd_role_cluster_start)
+    input_start_node: "{{ fact_lxd_role_cluster_start }}"
+  when: ( fact_lxd_role_determine_cluster )
 
 # -----
 # NO: All these nodes are independent LXD hosts
@@ -59,17 +59,7 @@
   ansible.builtin.include_tasks: "clean_self.yml"
   when: ( not fact_lxd_role_determine_cluster )
 
-# -----
-# ALL: Shared logic for both
-# -----
-
-- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/04 - Bring down our profiles. Blank out our default profile"
-  ansible.builtin.include_tasks: "function_down_profiles.yml"
-
-- name: "LXD_SERVICE/TASK_CLEAN/05 - Bring down our storage"
-  ansible.builtin.include_tasks: "function_down_storage.yml"
-
-- name: "LXD_SERVICE/TASK_CLEAN/06 - Remove init config"
+- name: "LXD_SERVICE/TASK_CLEAN/05 - Remove init config"
   ansible.builtin.file:
     path: "{{ applied_lxd_role_config.role_dir }}/{{ applied_lxd_role_config.init_config.target }}{{ applied_lxd_role_config.init_config.name }}.yml"
     state: absent

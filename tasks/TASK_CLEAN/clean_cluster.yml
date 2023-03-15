@@ -4,9 +4,19 @@
 
 - name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/01 - Bring down our containers"
   ansible.builtin.include_tasks: "function_down_containers.yml"
+  when: (inventory_hostname == input_start_node)
 
 - name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/02 - Bring down our images"
   ansible.builtin.include_tasks: "function_down_images.yml"
+  when: (inventory_hostname == input_start_node)
 
-- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/03 - Bring down the cluster"
+- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/03 - Bring down our profiles. Blank out our default profile"
+  ansible.builtin.include_tasks: "function_down_profiles.yml"
+  when: (inventory_hostname == input_start_node)
+
+- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/04 - Bring down our storage"
+  ansible.builtin.include_tasks: "function_down_storage_cluster.yml"
+
+- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/05 - Bring down the cluster"
   ansible.builtin.include_tasks: "function_down_cluster.yml"
+  when: (inventory_hostname == input_start_node)

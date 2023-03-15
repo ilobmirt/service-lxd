@@ -1,0 +1,75 @@
+# =================================================================================================#
+# ROLE FUNCTION - It would've been too easy to run storage pools properly through the init preseed #
+# =================================================================================================#
+
+# See https://linuxcontainers.org/lxd/docs/master/howto/storage_pools/#create-a-storage-pool-in-a-cluster
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_POOL/01 - Add Role_Dirs"
+  # noqa: jinja[spacing]
+  ansible.builtin.set_fact:
+    fact_cluster_storage_items: "{{ ( fact_cluster_storage_items | default([]) ) + [ cultivated_storage ] }}"
+  loop: "{{ applied_lxd_role_config.storage_pools | selectattr('driver', '==', 'role_dir') }}"
+  loop_control:
+    loop_var: current_storage
+  vars:
+    cultivated_storage:
+      name: "{{ current_storage.name }}"
+      driver: 'dir'
+      source: "{{ applied_lxd_role_config.role_dir }}/pools/dir/{{ current_storage.name }}"
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_POOL/02 - Add Custom_Dirs"
+  # noqa: jinja[spacing]
+  ansible.builtin.set_fact:
+    fact_cluster_storage_items: "{{ ( fact_cluster_storage_items | default([]) ) + [ cultivated_storage ] }}"
+  loop: "{{ applied_lxd_role_config.storage_pools | selectattr('driver', '==', 'dir') }}"
+  loop_control:
+    loop_var: current_storage
+  vars:
+    cultivated_storage:
+      name: "{{ current_storage.name }}"
+      driver: 'dir'
+      source: "{{ current_storage.source }}"
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_POOL/03 - Add Role_BTRFS"
+  # noqa: jinja[spacing]
+  ansible.builtin.set_fact:
+    fact_cluster_storage_items: "{{ ( fact_cluster_storage_items | default([]) ) + [ cultivated_storage ] }}"
+  loop: "{{ applied_lxd_role_config.storage_pools | selectattr('driver', '==', 'role_btrfs') }}"
+  loop_control:
+    loop_var: current_storage
+  vars:
+    cultivated_storage:
+      name: "{{ current_storage.name }}"
+      driver: 'btrfs'
+      source: "{{ applied_lxd_role_config.role_dir }}/mounts/btrfs/{{ current_storage.name }}"
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_POOL/04 - Add Custom_BTRFS"
+  # noqa: jinja[spacing]
+  ansible.builtin.set_fact:
+    fact_cluster_storage_items: "{{ ( fact_cluster_storage_items | default([]) ) + [ cultivated_storage ] }}"
+  loop: "{{ applied_lxd_role_config.storage_pools | selectattr('driver', '==', 'btrfs') }}"
+  loop_control:
+    loop_var: current_storage
+  vars:
+    cultivated_storage:
+      name: "{{ current_storage.name }}"
+      driver: 'btrfs'
+      source: "{{ current_storage.source }}"
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_POOL/05 - Execute node add storage"
+  ansible.builtin.include_tasks: func_init_cluster_storage_create.yml
+  vars:
+    input_storage: "{{ current_storage }}"
+    input_target: "{{ inventory_hostname }}"
+  loop: "{{ fact_cluster_storage_items }}"
+  loop_control:
+    loop_var: current_storage
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_POOL/06 - Execute cluster add storage"
+  ansible.builtin.include_tasks: func_init_cluster_storage_create.yml
+  vars:
+    input_storage: {'name': "{{ current_storage.name }}", 'driver': "{{ current_storage.driver }}"}
+  loop: "{{ fact_cluster_storage_items }}"
+  loop_control:
+    loop_var: current_storage
+  when: ( inventory_hostname == input_start_target )

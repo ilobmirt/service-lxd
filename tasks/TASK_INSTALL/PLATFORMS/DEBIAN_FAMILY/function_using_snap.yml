@@ -11,11 +11,12 @@
     upgrade: full
   become: true
 
-- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/02 - Install snapd and firewalld"
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/02 - Install packages"
   ansible.builtin.apt:
     name:
       - snapd
       - firewalld
+      - btrfs-progs
     state: present
   become: true
 

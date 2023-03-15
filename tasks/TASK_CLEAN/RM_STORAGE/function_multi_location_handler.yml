@@ -1,0 +1,42 @@
+# =================================================================================================#
+# ROLE FUNCTION - Storage Objects are a part of a cluster                                          #
+# =================================================================================================#
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_MULTI_LOCATION_HANDLER/01 - Which items contain our host?"
+  ansible.builtin.set_fact:
+    fact_this_storage_items: "{{ input_storage_items | selectattr('locations', 'contains', inventory_hostname) }}"
+    fact_build_single_items: []
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_MULTI_LOCATION_HANDLER/02a - Build local version of storage list"
+  # noqa: yaml[line-length]
+  ansible.builtin.shell:
+    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc storage show {{ current_storage.name }} --target {{ inventory_hostname }} --force-local 2> /dev/null"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  changed_when: false
+  register: command_storage_show
+  with_items: "{{ fact_this_storage_items }}"
+  loop_control:
+    loop_var: current_storage
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_MULTI_LOCATION_HANDLER/02b - Build local version of storage list"
+  ansible.builtin.set_fact:
+    fact_build_single_items: "{{ fact_build_single_items + [(current_build_item | from_yaml)] }}"
+  with_items: "{{ command_storage_show.results | map(attribute='stdout') | list }}"
+  loop_control:
+    loop_var: current_build_item
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_MULTI_LOCATION_HANDLER/03 - Remove all clustered storage"
+  ansible.builtin.shell:
+    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc storage delete {{ current_storage.name }}"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  changed_when: false
+  when: ( inventory_hostname == input_start_node )
+  with_items: "{{ fact_this_storage_items }}"
+  loop_control:
+    loop_var: current_storage
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_MULTI_LOCATION_HANDLER/04 - Call single host storage removal"
+  ansible.builtin.include_tasks: function_single_location_handler.yml
+  vars:
+    input_storage_items: "{{ fact_build_single_items }}"
+    input_is_cluster: true

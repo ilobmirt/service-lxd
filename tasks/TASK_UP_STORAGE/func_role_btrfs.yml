@@ -1,0 +1,57 @@
+# =================================================================================================#
+# ROLE FUNCTION - Provision a BTRFS storage pool located entirely within project directory         #
+# =================================================================================================#
+
+- name: "LXD_SERVICE/TASK_INIT/FUNC_ROLE_BTRFS/01 - Where's our storage loop device located?"
+  ansible.builtin.set_fact:
+    fact_pool_target_location: "{{ applied_lxd_role_config.role_dir }}/pools/btrfs/{{ input_store.name }}.img"
+    fact_mount_target_location: "{{ applied_lxd_role_config.role_dir }}/mounts/btrfs/{{ input_store.name }}"
+
+- name: "LXD_SERVICE/TASK_INIT/FUNC_ROLE_BTRFS/02 - Set aside directory targets"
+  ansible.builtin.file:
+    path: "{{ current_path }}"
+    state: directory
+    mode: "0755"
+  become: true
+  with_items:
+    - "{{ applied_lxd_role_config.role_dir }}/pools/btrfs"
+    - "{{ fact_mount_target_location }}"
+  loop_control:
+    loop_var: current_path
+
+- name: "LXD_SERVICE/TASK_INIT/FUNC_ROLE_BTRFS/03 - Make LXD role_btrfs loop device"
+  ansible.builtin.copy:
+    content: ""
+    dest: "{{ fact_pool_target_location }}"
+    force: false
+    mode: "0755"
+  become: true
+  register: touch_btrfs_loop_device
+
+- name: "LXD_SERVICE/TASK_INIT/FUNC_ROLE_BTRFS/04 - Allocate storage for loop device"
+  # noqa: no-handler
+  ansible.builtin.shell:
+    cmd: "fallocate -l {{ input_store.size is defined | ternary(input_store.size, '1G') }} {{ fact_pool_target_location }}"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  become: true
+  changed_when: false
+  when: ( touch_btrfs_loop_device.changed )
+
+- name: "LXD_SERVICE/TASK_INIT/FUNC_ROLE_BTRFS/05 - init btrfs loop device"
+  # noqa: no-handler
+  community.general.filesystem:
+    fstype: btrfs
+    dev: "{{ fact_pool_target_location }}"
+    resizefs: true
+    state: present
+  become: true
+  when: ( touch_btrfs_loop_device.changed )
+
+- name: "LXD_SERVICE/TASK_INIT/FUNC_ROLE_BTRFS/06 - We mount our loop device"
+  ansible.posix.mount:
+    src: "{{ fact_pool_target_location }}"
+    path: "{{ fact_mount_target_location }}"
+    opts: auto
+    fstype: btrfs
+    state: mounted
+  become: true

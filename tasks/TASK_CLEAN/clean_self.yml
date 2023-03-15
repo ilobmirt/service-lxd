@@ -7,3 +7,9 @@
 
 - name: "LXD_SERVICE/TASK_CLEAN/SELF/02 - Bring down our images"
   ansible.builtin.include_tasks: "function_down_images.yml"
+
+- name: "LXD_SERVICE/TASK_CLEAN/SELF/03 - Bring down our profiles. Blank out our default profile"
+  ansible.builtin.include_tasks: "function_down_profiles.yml"
+
+- name: "LXD_SERVICE/TASK_CLEAN/SELF/04 - Bring down our storage"
+  ansible.builtin.include_tasks: "function_down_storage_self.yml"

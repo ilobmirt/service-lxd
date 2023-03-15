@@ -1,0 +1,4 @@
+networks:
+{% for curr_network in applied_lxd_role_config.networks %}
+- {{ curr_network }}
+{% endfor %}

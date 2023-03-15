@@ -1,0 +1,16 @@
+# =================================================================================================#
+# ROLE FUNCTION - Remove btrfs based storage                                                         #
+# =================================================================================================#
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_RM_STORAGE_BTRFS/01 - Unmount the loop device"
+  ansible.posix.mount:
+    path: "{{ input_storage.config.source | default('/path_does_not_exist') }}"
+    state: absent
+  become: true
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_RM_STORAGE_BTRFS/02 - Destroy our loop devices"
+  ansible.builtin.file:
+    path: "{{ applied_lxd_role_config.role_dir }}/pools/btrfs/{{ input_storage.name }}.img"
+    state: absent
+  become: true
+  when: ( applied_lxd_role_config.role_dir in ( input_storage.config.source | default('/path_does_not_exist') ) )

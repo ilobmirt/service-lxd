@@ -1,0 +1,19 @@
+# =================================================================================================#
+# ROLE FUNCTION - Run a single command to add storage to LXD outside of lxd init                   #
+# =================================================================================================#
+
+# See https://linuxcontainers.org/lxd/docs/master/howto/storage_pools/#create-a-storage-pool-in-a-cluster
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_CREATE/01 - Setup CMD Vars"
+  # noqa: yaml[line-length]
+  ansible.builtin.set_fact:
+    fact_lxc_cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc"
+    fact_storage_source: "{{ ((input_storage.source | default('')) != '') | ternary(' source=<1>', '') | replace('<1>', (input_storage.source | default(''))) }}"
+    fact_storage_target: "{{ ((input_target | default('')) != '') | ternary(' --target=<1>', '') | replace('<1>', (input_target | default(''))) }}"
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_CREATE/02 - Run Storage command"
+  # noqa: yaml[line-length]
+  ansible.builtin.shell:
+    cmd: "{{ fact_lxc_cmd }} storage create {{ input_storage.name }} {{ input_storage.driver }}{{ fact_storage_source }}{{ fact_storage_target }}"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  changed_when: false
