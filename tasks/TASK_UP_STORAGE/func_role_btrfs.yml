@@ -31,7 +31,7 @@
 - name: "LXD_SERVICE/TASK_INIT/FUNC_ROLE_BTRFS/04 - Allocate storage for loop device"
   # noqa: no-handler
   ansible.builtin.shell:
-    cmd: "fallocate -l {{ input_store.size is defined | ternary(input_store.size, '1G') }} {{ fact_pool_target_location }}"
+    cmd: "truncate --size={{ input_store.size is defined | ternary(input_store.size, '1G') }} {{ fact_pool_target_location }}"
     executable: "{{ applied_lxd_role_config.using_shell }}"
   become: true
   changed_when: false
