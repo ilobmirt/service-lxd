@@ -14,11 +14,12 @@
     state: latest
   become: true
 
-- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/SNAP/02 - Install snapd and firewalld"
+- name: "LXD_SERVICE/TASK_INSTALL/REDHAT_FAMILY/SNAP/02 - Install packages"
   ansible.builtin.dnf:
     name:
       - snapd
       - firewalld
+      - btrfs-progs
     state: present
   become: true
 
