@@ -1,22 +1,22 @@
 # =================================================================================================#
-# ROLE FUNCTION - Removes all storage pools - as part of a cluster                                 #
+# ROLE FUNCTION - Removes all storage pools for the local node                                     #
 # =================================================================================================#
 
-- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_STORAGE_CLUSTER/01 - What storage pools do we have?"
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_STORAGE_SELF/01 - What storage pools do we have?"
   ansible.builtin.shell:
     cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc storage list --format yaml"
     executable: "{{ applied_lxd_role_config.using_shell }}"
   register: clean_storage_list_command
   changed_when: false
 
-- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_STORAGE_CLUSTER/02 - Set facts from input"
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_STORAGE_SELF/02 - Set facts from input"
   ansible.builtin.set_fact:
     fact_polled_storage: "{{ clean_storage_list_command.stdout | from_yaml }}"
     fact_supported_formats:
       - dir
       - btrfs
 
-- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_STORAGE_CLUSTER/03 - Remove Storage - Multi Location"
-  ansible.builtin.include_tasks: RM_STORAGE/function_multi_location_handler.yml
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_STORAGE_SELF/03a - Remove Storage - Single Location"
+  ansible.builtin.include_tasks: RM_STORAGE/func_single_location_handler.yml
   vars:
     input_storage_items: "{{ fact_polled_storage | selectattr('driver', 'in', fact_supported_formats) }}"

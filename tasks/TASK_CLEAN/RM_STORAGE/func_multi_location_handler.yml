@@ -36,7 +36,7 @@
     loop_var: current_storage
 
 - name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_MULTI_LOCATION_HANDLER/04 - Call single host storage removal"
-  ansible.builtin.include_tasks: function_single_location_handler.yml
+  ansible.builtin.include_tasks: func_single_location_handler.yml
   vars:
     input_storage_items: "{{ fact_build_single_items }}"
     input_is_cluster: true

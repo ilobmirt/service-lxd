@@ -13,7 +13,7 @@
   when: ( not ( input_is_cluster | default(false) ) )
 
 - name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_SINGLE_LOCATION_HANDLER/02 - Remove Storage - DIR"
-  ansible.builtin.include_tasks: "RM_TYPE/function_rm_storage_dir.yml"
+  ansible.builtin.include_tasks: "RM_TYPE/func_rm_storage_dir.yml"
   vars:
     input_storage: "{{ current_storage }}"
   with_items: "{{ input_storage_items | selectattr('driver', 'equalto', 'dir') }}"
@@ -21,7 +21,7 @@
     loop_var: current_storage
 
 - name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_SINGLE_LOCATION_HANDLER/03 - Remove Storage - BTRFS"
-  ansible.builtin.include_tasks: "RM_TYPE/function_rm_storage_btrfs.yml"
+  ansible.builtin.include_tasks: "RM_TYPE/func_rm_storage_btrfs.yml"
   vars:
     input_storage: "{{ current_storage }}"
   with_items: "{{ input_storage_items | selectattr('driver', 'equalto', 'btrfs') }}"

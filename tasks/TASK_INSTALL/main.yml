@@ -3,17 +3,17 @@
 # =================================================================================================#
 
 - name: "LXD_SERVICE/TASK_INSTALL/01a - OS FAMILY = DEBIAN"
-  ansible.builtin.include_tasks: "PLATFORMS/DEBIAN_FAMILY/function_using_{{ applied_lxd_role_config.install_config.method }}.yml"
+  ansible.builtin.include_tasks: "PLATFORMS/DEBIAN_FAMILY/func_using_{{ applied_lxd_role_config.install_config.method }}.yml"
   when: ( ansible_facts.os_family == 'Debian' )
 
 - name: "LXD_SERVICE/TASK_INSTALL/01b - OS FAMILY = RED HAT"
-  ansible.builtin.include_tasks: "PLATFORMS/REDHAT_FAMILY/function_using_{{ applied_lxd_role_config.install_config.method }}.yml"
+  ansible.builtin.include_tasks: "PLATFORMS/REDHAT_FAMILY/func_using_{{ applied_lxd_role_config.install_config.method }}.yml"
   when: ( ansible_facts.os_family == 'RedHat' )
 
 - name: "LXD_SERVICE/TASK_INSTALL/01c - OS FAMILY = ARCH"
-  ansible.builtin.include_tasks: "PLATFORMS/ARCH_FAMILY/function_using_{{ applied_lxd_role_config.install_config.method }}.yml"
+  ansible.builtin.include_tasks: "PLATFORMS/ARCH_FAMILY/func_using_{{ applied_lxd_role_config.install_config.method }}.yml"
   when: ( ansible_facts.os_family == 'Archlinux' )
 
 - name: "LXD_SERVICE/TASK_INSTALL/01d - OS FAMILY = ALPINE"
-  ansible.builtin.include_tasks: "PLATFORMS/ALPINE/function_using_{{ applied_lxd_role_config.install_config.method }}.yml"
+  ansible.builtin.include_tasks: "PLATFORMS/ALPINE/func_using_{{ applied_lxd_role_config.install_config.method }}.yml"
   when: ( ansible_facts.os_family == 'Alpine' )
