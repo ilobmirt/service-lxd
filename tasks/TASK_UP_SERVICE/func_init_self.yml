@@ -17,3 +17,11 @@
     executable: "{{ applied_lxd_role_config.using_shell }}"
   changed_when: false
   when: ( check_add_config.changed )
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_SELF/03 - Add lxd networks to trusted networks"
+  ansible.builtin.include_tasks: func_firewalld_trust_interface.yml
+  vars:
+    interface_target: "{{ current_network.name }}"
+  loop: "{{ applied_lxd_role_config.networks }}"
+  loop_control:
+    loop_var: current_network
