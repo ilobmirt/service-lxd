@@ -1,0 +1,61 @@
+# =================================================================================================#
+# ROLE FUNCTION - Run a single command to add storage to LXD outside of lxd init                   #
+# =================================================================================================#
+
+# See https://linuxcontainers.org/lxd/docs/master/howto/cluster_config_networks/#how-to-configure-networks-for-a-cluster
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NETWORK_CREATE/01 - Setup CMD Vars"
+  # noqa: yaml[line-length]
+  ansible.builtin.set_fact:
+    fact_lxc_cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc"
+    fact_build_cmd: " network create {{ input_network.name }}"
+    fact_targetable_confs:
+      - bridge.external_interfaces
+      - parent
+      - bgp.ipv4.nexthop
+      - bgp.ipv6.nexthop
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NETWORK_CREATE/02 - Get network type"
+  ansible.builtin.set_fact:
+    fact_build_cmd: "{{ fact_build_cmd }} --type {{ (input_network.type | default('') | length <= 0) | ternary('bridge', (input_network.type | default(''))) }}"
+  when: input_network.type is defined
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NETWORK_CREATE/03 - Add target options"
+  ansible.builtin.set_fact:
+    fact_build_cmd: "{{ fact_build_cmd }} {{ current_config.key }}={{ current_config.value }}"
+  loop: "{{ lookup('ansible.builtin.dict', (input_network.config | default({}))) | selectattr('key', 'in', fact_targetable_confs) }}"
+  loop_control:
+    loop_var: current_config
+  when: ( input_network.config is defined ) and ( input_target is defined )
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NETWORK_CREATE/04 - Add cluster options"
+  ansible.builtin.set_fact:
+    fact_build_cmd: "{{ fact_build_cmd }} {{ current_config.key }}={{ current_config.value }}"
+  loop: "{{ lookup('ansible.builtin.dict', (input_network.config | default({}))) | rejectattr('key', 'in', fact_targetable_confs) }}"
+  loop_control:
+    loop_var: current_config
+  when: ( input_network.config is defined ) and ( input_target is not defined )
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NETWORK_CREATE/05 - is it a target?"
+  ansible.builtin.set_fact:
+    fact_build_cmd: "{{ fact_build_cmd }} --target {{ input_target | default('') }}"
+  when: input_target is defined
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NETWORK_CREATE/06 - Run Network command"
+  ansible.builtin.shell:
+    cmd: "{{ fact_lxc_cmd }}{{ fact_build_cmd }}"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  changed_when: false
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NETWORK_CREATE/07 - Add to profile"
+  ansible.builtin.shell:
+    cmd: "{{ fact_lxc_cmd }} network attach-profile {{ input_network.name }} {{ input_network.project }}"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  changed_when: false
+  when: ( input_network.project is defined ) and ( input_target is not defined )
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NETWORK_CREATE/08 - Add to trusted networks"
+  ansible.builtin.include_tasks: func_firewalld_trust_interface.yml
+  vars:
+    interface_target: "{{ input_network.name }}"
+  when: ( input_target is defined )

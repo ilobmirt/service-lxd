@@ -1,0 +1,24 @@
+# =================================================================================================#
+# ROLE FUNCTION - Add lxd to trusted interface and if changed, reload it                           #
+# =================================================================================================#
+
+# Fix - LXDBr0 not being able to assign IPs to containers or update
+# DOCS: https://linuxcontainers.org/lxd/docs/master/howto/network_bridge_firewalld/#firewalld-add-the-bridge-to-the-trusted-zone
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_FIREWALLD_TRUST_INTERFACE/01 - Firewalld: Allow Ports"
+  ansible.posix.firewalld:
+    zone: trusted
+    interface: "{{ interface_target }}"
+    state: enabled
+    permanent: true
+    immediate: true
+  become: true
+  register: reg_firewalld_add
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_FIREWALLD_TRUST_INTERFACE/02 - Firewalld: reload config"
+  # noqa: no-handler
+  ansible.builtin.shell:
+    cmd: "firewall-cmd --reload"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  become: true
+  changed_when: false
+  when: ( reg_firewalld_add.changed )

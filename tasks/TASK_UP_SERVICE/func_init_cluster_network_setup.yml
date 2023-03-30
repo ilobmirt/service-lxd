@@ -1,0 +1,23 @@
+# =================================================================================================#
+# ROLE FUNCTION - It would've been too easy to run networks properly through the init preseed      #
+# =================================================================================================#
+
+# See https://linuxcontainers.org/lxd/docs/master/howto/cluster_config_networks/#how-to-configure-networks-for-a-cluster
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NETWORK_SETUP/01 - Execute node add network"
+  ansible.builtin.include_tasks: func_init_cluster_network_create.yml
+  vars:
+    input_network: "{{ current_network }}"
+    input_target: "{{ inventory_hostname }}"
+  loop: "{{ applied_lxd_role_config.networks }}"
+  loop_control:
+    loop_var: current_network
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_NETWORK_SETUP/02 - Execute cluster add network"
+  ansible.builtin.include_tasks: func_init_cluster_network_create.yml
+  vars:
+    input_network: "{{ current_network }}"
+  loop: "{{ applied_lxd_role_config.networks }}"
+  loop_control:
+    loop_var: current_network
+  when: ( inventory_hostname == input_start_target )
