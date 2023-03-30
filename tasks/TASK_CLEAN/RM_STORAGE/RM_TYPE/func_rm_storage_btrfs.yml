@@ -14,3 +14,21 @@
     state: absent
   become: true
   when: ( applied_lxd_role_config.role_dir in ( input_storage.config.source | default('/path_does_not_exist') ) )
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_RM_STORAGE_BTRFS/03a - Destroy our real devices"
+  ansible.builtin.shell:
+    cmd: "wipefs --all -t btrfs {{ input_storage.config.source }} --force"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  register: clean_network_list_command
+  changed_when: false
+  become: true
+  when: ( '/dev/' in ( input_storage.config.source | default('/path_does_not_exist') ) )
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_RM_STORAGE_BTRFS/03b - Destroy our real devices"
+  ansible.builtin.shell:
+    cmd: "wipefs --all -t btrfs /dev/disk/by-uuid/{{ input_storage.config.source }} --force"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  register: clean_network_list_command
+  changed_when: false
+  become: true
+  when: ( ( input_storage.config.source | default('/path_does_not_exist') ) is regex("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}") )
