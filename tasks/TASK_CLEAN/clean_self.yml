@@ -11,5 +11,8 @@
 - name: "LXD_SERVICE/TASK_CLEAN/SELF/03 - Bring down our profiles. Blank out our default profile"
   ansible.builtin.include_tasks: "func_down_profiles.yml"
 
-- name: "LXD_SERVICE/TASK_CLEAN/SELF/04 - Bring down our storage"
+- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/04 - Bring down our networks."
+  ansible.builtin.include_tasks: "func_down_networks.yml"
+
+- name: "LXD_SERVICE/TASK_CLEAN/SELF/05 - Bring down our storage"
   ansible.builtin.include_tasks: "func_down_storage_self.yml"

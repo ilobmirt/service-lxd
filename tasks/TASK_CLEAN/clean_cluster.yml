@@ -14,9 +14,13 @@
   ansible.builtin.include_tasks: "func_down_profiles.yml"
   when: (inventory_hostname == input_start_node)
 
-- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/04 - Bring down our storage"
+- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/04 - Bring down our networks."
+  ansible.builtin.include_tasks: "func_down_networks.yml"
+  when: (inventory_hostname == input_start_node)
+
+- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/05 - Bring down our storage"
   ansible.builtin.include_tasks: "func_down_storage_cluster.yml"
 
-- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/05 - Bring down the cluster"
+- name: "LXD_SERVICE/TASK_CLEAN/CLUSTER/06 - Bring down the cluster"
   ansible.builtin.include_tasks: "func_down_cluster.yml"
   when: (inventory_hostname == input_start_node)

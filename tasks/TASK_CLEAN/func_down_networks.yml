@@ -1,0 +1,23 @@
+# =================================================================================================#
+# ROLE FUNCTION - Removes all known networks managed by lxd.                                       #
+# =================================================================================================#
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_NETWORKS/01a - What networks do we have?"
+  ansible.builtin.shell:
+    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc network list --format yaml"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  register: clean_network_list_command
+  changed_when: false
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_NETWORKS/01b - What networks do we have?"
+  ansible.builtin.set_fact:
+    fact_polled_networks: "{{ clean_network_list_command.stdout | from_yaml | selectattr('managed', 'equalto', true) }}"
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_DOWN_NETWORKS/02 - Delete our networks"
+  ansible.builtin.shell:
+    cmd: "sudo -u {{ applied_lxd_role_config.target_user }} {{ applied_lxd_role_config.bin_dir }}/lxc network delete {{ current_network.name }}"
+    executable: "{{ applied_lxd_role_config.using_shell }}"
+  with_items: "{{ fact_polled_networks }}"
+  changed_when: false
+  loop_control:
+    loop_var: current_network
