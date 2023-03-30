@@ -46,30 +46,14 @@
     loop_var: current_host
   when: ( fact_lxd_role_is_cluster ) and ( inventory_hostname == fact_lxd_role_cluster_start )
 
-# To-Do: add storage pool creation though include_tasks
 - name: "LXD_SERVICE/TASK_UP_SERVICE/03c - Init cluster storage getting around lxd init --preseed"
   ansible.builtin.include_tasks: func_init_cluster_storage_pool.yml
   vars:
     input_start_target: "{{ fact_lxd_role_cluster_start }}"
   when: ( fact_lxd_role_is_cluster )
 
-# Fix - LXDBr0 not being able to assign IPs to containers or update
-# DOCS: https://linuxcontainers.org/lxd/docs/master/howto/network_bridge_firewalld/#firewalld-add-the-bridge-to-the-trusted-zone
-- name: "LXD_SERVICE/TASK_UP_SERVICE/04 - Firewalld: Allow Ports"
-  ansible.posix.firewalld:
-    zone: trusted
-    interface: "{{ current_network.name }}"
-    state: enabled
-    permanent: true
-    immediate: true
-  become: true
-  with_items: "{{ applied_lxd_role_config.networks }}"
-  loop_control:
-    loop_var: current_network
-
-- name: "LXD_SERVICE/TASK_UP_SERVICE/05 - Firewalld: reload config"
-  ansible.builtin.shell:
-    cmd: "firewall-cmd --reload"
-    executable: "{{ applied_lxd_role_config.using_shell }}"
-  become: true
-  changed_when: false
+- name: "LXD_SERVICE/TASK_UP_SERVICE/03d - Init cluster networking getting around lxd init --preseed"
+  ansible.builtin.include_tasks: func_init_cluster_network_setup.yml
+  vars:
+    input_start_target: "{{ fact_lxd_role_cluster_start }}"
+  when: ( fact_lxd_role_is_cluster )
