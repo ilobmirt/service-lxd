@@ -1,0 +1,32 @@
+# =================================================================================================#
+# ROLE FUNCTION - Remove zfs based storage                                                         #
+# =================================================================================================#
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_RM_STORAGE_ZFS/01 - Unmount the loop device"
+  ansible.posix.mount:
+    path: "{{ input_storage.config.source | default('/path_does_not_exist') }}"
+    state: absent
+  become: true
+
+# -----
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_RM_STORAGE_ZFS/02a - Destroy our loop devices"
+  community.general.zfs:
+    name: "{{ input_storage.name }}/fsmain"
+    state: absent
+  become: true
+  when: ( applied_lxd_role_config.role_dir in ( input_storage.config.source | default('/path_does_not_exist') ) )
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_RM_STORAGE_ZFS/02b - Destroy our loop devices"
+  community.general.zfs:
+    name: "{{ input_storage.name }}"
+    state: absent
+  become: true
+  when: ( applied_lxd_role_config.role_dir in ( input_storage.config.source | default('/path_does_not_exist') ) )
+
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_RM_STORAGE_ZFS/02c - Destroy our loop devices"
+  ansible.builtin.file:
+    path: "{{ applied_lxd_role_config.role_dir }}/pools/zfs/{{ input_storage.name }}.img"
+    state: absent
+  become: true
+  when: ( applied_lxd_role_config.role_dir in ( input_storage.config.source | default('/path_does_not_exist') ) )

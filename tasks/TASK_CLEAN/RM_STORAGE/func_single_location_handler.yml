@@ -28,6 +28,14 @@
   loop_control:
     loop_var: current_storage
 
+- name: "LXD_SERVICE/TASK_CLEAN/FUNCTION_SINGLE_LOCATION_HANDLER/04 - Remove Storage - ZFS"
+  ansible.builtin.include_tasks: "RM_TYPE/func_rm_storage_Zfs.yml"
+  vars:
+    input_storage: "{{ current_storage }}"
+  with_items: "{{ input_storage_items | selectattr('driver', 'equalto', 'zfs') }}"
+  loop_control:
+    loop_var: current_storage
+
 # -----
 # TO_DO: add more ways to remove storage
 # -----

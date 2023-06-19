@@ -21,10 +21,17 @@
   become: true
 
 # -----
+# ZFS: Install module
+# -----
+
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/03 - install zfs"
+  ansible.builtin.include_tasks: "ZFS_SUPPORT/main.yml"
+
+# -----
 # FIREWALLD: enable and start service
 # -----
 
-- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/03 - Enable and start firewalld"
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/04 - Enable and start firewalld"
   ansible.builtin.service:
     name: firewalld
     enabled: true
@@ -35,19 +42,19 @@
 # SNAP: Install LXD
 # -----
 
-- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/04 - Getting snapd ready for install"
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/05 - Getting snapd ready for install"
   ansible.builtin.service:
     name: snapd.seeded.service
     state: started
   become: true
 
-- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/05 - Install Snap Core"
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/06 - Install Snap Core"
   community.general.snap:
     name: core
     state: present
   become: true
 
-- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/06 - Install Snap lxd"
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/07 - Install Snap lxd"
   community.general.snap:
     name: lxd
     state: present
@@ -58,7 +65,7 @@
 # SYSTEM: Add user to lxd group
 # -----
 
-- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/07 - Verify user is added to the group 'lxd'"
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/08 - Verify user is added to the group 'lxd'"
   ansible.builtin.user:
     name: "{{ applied_lxd_role_config.target_user }}"
     append: true
@@ -70,12 +77,12 @@
 # SYSTEM: bin_dir = '/snap/bin'
 # -----
 
-- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/08a - Define the bin_dir with '/snap/bin'"
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/09a - Define the bin_dir with '/snap/bin'"
   ansible.builtin.set_fact:
     fact_append_bin_dir:
       bin_dir: '/snap/bin'
 
-- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/08b - Define the bin_dir with '/snap/bin'"
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/09b - Define the bin_dir with '/snap/bin'"
   ansible.builtin.set_fact:
     applied_lxd_role_config: "{{ applied_lxd_role_config | combine(fact_append_bin_dir, recursive=true) }}"
   when: applied_lxd_role_config.bin_dir|default('') | length<1
@@ -84,7 +91,7 @@
 # SYSTEM: Do we need to include our bin_dir to $PATH?
 # -----
 
-- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/09 - What's our current $PATH ?"
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/SNAP/10 - What's our current $PATH ?"
   ansible.builtin.shell:
     cmd: "echo $PATH | sed 's|:|\\n|g'"
     executable: "{{ applied_lxd_role_config.using_shell }}"
@@ -95,7 +102,7 @@
 # YES: We append our dir to the system path since it wasn't seen
 # -----
 
-- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/10a - Set path to defined LDX path"
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/11a - Set path to defined LDX path"
   ansible.builtin.copy:
     src: "{{ applied_lxd_role_config.path_script.name }}"
     dest: "{{ applied_lxd_role_config.path_script.target }}/{{ applied_lxd_role_config.path_script.name }}"
@@ -104,7 +111,7 @@
   become: true
   when: (check_lxd_installed.changed ) and ( applied_lxd_role_config.bin_dir not in check_current_path_command.stdout_lines )
 
-- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/10b - Set path to defined LDX path"
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/11b - Set path to defined LDX path"
   ansible.builtin.lineinfile:
     state: absent
     path: "{{ applied_lxd_role_config.path_script.target }}/{{ applied_lxd_role_config.path_script.name }}"
@@ -115,7 +122,7 @@
   become: true
   when: (check_lxd_installed.changed ) and ( applied_lxd_role_config.bin_dir not in check_current_path_command.stdout_lines )
 
-- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/10c - Set path to defined LDX path"
+- name: "LXD_SERVICE/TASK_INSTALL/DEBIAN_FAMILY/11c - Set path to defined LDX path"
   ansible.builtin.lineinfile:
     state: present
     path: "{{ applied_lxd_role_config.path_script.target }}/{{ applied_lxd_role_config.path_script.name }}"

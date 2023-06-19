@@ -12,6 +12,12 @@ storage_pools:
   description: "Ansible-Configured storage pool for lxd"
   name: {{storage_pool_item.name}}
   driver: btrfs
+{% elif storage_pool_item.driver is defined and storage_pool_item.driver == 'role_zfs' %}
+- config:
+    source: {{storage_pool_item.name}}/fsmain
+  description: "Ansible-Configured storage pool for lxd"
+  name: {{storage_pool_item.name}}
+  driver: zfs
 {% else %}
 - {{storage_pool_item }}
 {% endif %}

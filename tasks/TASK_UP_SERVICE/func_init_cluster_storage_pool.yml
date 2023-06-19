@@ -56,7 +56,33 @@
       driver: 'btrfs'
       source: "{{ current_storage.source }}"
 
-- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_POOL/05 - Execute node add storage"
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_POOL/05 - Add Role_ZFS"
+  # noqa: jinja[spacing]
+  ansible.builtin.set_fact:
+    fact_cluster_storage_items: "{{ ( fact_cluster_storage_items | default([]) ) + [ cultivated_storage ] }}"
+  loop: "{{ applied_lxd_role_config.storage_pools | selectattr('driver', '==', 'role_zfs') }}"
+  loop_control:
+    loop_var: current_storage
+  vars:
+    cultivated_storage:
+      name: "{{ current_storage.name }}"
+      driver: 'zfs'
+      source: "{{ current_storage.name }}/fsmain"
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_POOL/06 - Add Custom_ZFS"
+  # noqa: jinja[spacing]
+  ansible.builtin.set_fact:
+    fact_cluster_storage_items: "{{ ( fact_cluster_storage_items | default([]) ) + [ cultivated_storage ] }}"
+  loop: "{{ applied_lxd_role_config.storage_pools | selectattr('driver', '==', 'zfs') }}"
+  loop_control:
+    loop_var: current_storage
+  vars:
+    cultivated_storage:
+      name: "{{ current_storage.name }}"
+      driver: 'zfs'
+      source: "{{ current_storage.source }}"
+
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_POOL/07 - Execute node add storage"
   ansible.builtin.include_tasks: func_init_cluster_storage_create.yml
   vars:
     input_storage: "{{ current_storage }}"
@@ -65,7 +91,7 @@
   loop_control:
     loop_var: current_storage
 
-- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_POOL/06 - Execute cluster add storage"
+- name: "LXD_SERVICE/TASK_UP_SERVICE/FUNC_INIT_CLUSTER_STORAGE_POOL/08 - Execute cluster add storage"
   ansible.builtin.include_tasks: func_init_cluster_storage_create.yml
   vars:
     input_storage: {'name': "{{ current_storage.name }}", 'driver': "{{ current_storage.driver }}"}
